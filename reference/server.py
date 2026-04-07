@@ -21,7 +21,7 @@ from agent import run_agent
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("slope64-chatbot")
 
-VERSION = "1.0.1"
+VERSION = "1.1"
 
 MANUAL_PATH = Path(os.environ.get("MANUAL_PATH", "/app/slope64_manual.txt"))
 # Fallback: look next to this script
