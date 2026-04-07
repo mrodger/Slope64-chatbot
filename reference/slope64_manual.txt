@@ -1,0 +1,603 @@
+SLOPE STABILITY ANALYSIS BY
+FINITE ELEMENTS
+
+A guide to the use of Program slope64
+
+D.V. Griffiths
+
+Geomechanics Research Center
+Colorado School of Mines
+April 2026
+
+Running the slope64 program
+The source code for slope64 is written in Fortran 2003, but users are provided with the executable file
+slope64.exe and the example data files ex1.dat thru ex7.dat as described in this report.
+The files needed to run the slope program with one of the examples are as follows:
+slope64.exe An executable file of the slope64 program
+ex?.dat
+A typical example data file as described in this report
+
+Running an example problem
+In order to run slope64 with an example data file, e.g. ex4.dat, double-click on the
+slope64.exe icon in Windows explorer which should open up a prompt that
+States “Please enter the base name of data file:”
+Then type the base name of the data file ex4 and press enter
+If the program runs properly, you should see evidence of iterations being reported back to the screen.
+When the job is complete you should see the following four additional files in the same folder:
+
+The ex4.res file is simple text reporting the numerical results of your analysis
+The ex4.msh file is a PostScript file showing the finite element mesh
+The ex4.dis file is a PostScript file showing the deformed mesh at failure
+The ex4.vec file is a PostScript file showing the nodal displacement vectors at failure
+
+Running your own problem
+Create your own data file. This report explains the layout of data for use with slope64. It may help to
+make a copy of one of the example data files closest to your own problem and edit that as needed. Let us
+assume your data file is called fred.dat. Note that the extension must be of type .dat.
+
+In order to run your own data file fred.dat, once more double- click on the executable icon
+slope64.exe, and when prompted type the basename of the data file, namely fred
+If all goes well, the following additional files will appear in your folder: fred.res, fred.msh,
+fred.vec and fred.dat
+
+Note: Program slope64.f95 is based closely on p64.f95 in the textbook, “Programming the Finite
+Element Method” by I.M. Smith, D.V. Griffiths and L. Margetts. 5th ed., 2014. Users of slope64 are
+encouraged to refer to this text and the companion paper, “Slope stability analysis by finite elements”, by
+D.V. Griffiths and P.A. Lane, Géotechnique 49, no.3, pp.387-403, (1999).
+
+Explanation of data for Program slope64.exe
+
+(suggested value, 0.02)
+
+12
+
+20
+
+12
+
+  = 30
+"Example 1: A homogeneous slope"
+
+10
+
+"Width of top of embankment (w1)"
+12.0
+"Width of sloping portion of embankment (s1)"
+20.0
+"Distance foundation extends to right of
+embankment toe (w2)"
+12.0
+"Height of embankment (h1)"
+10.0
+"Thickness of foundation layer (h2)"
+10.0
+"Number of x-elements in embankment (nx1)"
+32
+"Number of x-elements to right of embankment toe (nx2)"
+12
+"Number of y-elements in embankment (ny1)"
+10
+"Number of y-elements in foundation (ny2)"
+10
+
+c = 5
+ = 20
+
+10
+
+Fig 1.1 Finite element mesh for Example 1
+
+"Number of different property groups (np_types)"
+1
+"Material properties (phi,c,psi,gamma,e,v) for each group"
+30.0 5.0 0.0 20.0 1.e5 0.3
+"Property group assigned to each element (etype, data not needed if np_types=1)"
+"Pseudo-static analysis: Horizontal acceleration factor (k_h)"
+0.0
+"Number of free surface points and their coordinates (nosurf, surf(2,nosurf))"
+0
+
+"Unit weight of water (gam_w)"
+0.0
+"Iteration ceiling (limit)"
+1000
+"Factor of Safety accuracy tolerance (fos_tol)"
+0.02
+
+trial factor
+0.5000
+1.0000
+1.5000
+1.5312
+1.5469
+1.5625
+
+max displ
+0.3050E-01
+0.3050E-01
+0.3546E-01
+0.3622E-01
+0.3651E-01
+0.4026E-01
+
+Estimated Factor of Safety =
+
+iterations
+2
+7
+45
+305
+485
+1000
+1.56
+
+FS  1.59
+
+Fig 1.2 SRF vs. dmax for Example 1
+
+ex1.vec
+
+ex1.dis
+
+Fig 1.2 Displacement vectors and deformed mesh at failure for Example 1
+
+Fig 2.1 Finite element mesh for Example 2
+
+trial factor
+0.5000
+1.0000
+1.1250
+1.1875
+1.2031
+1.2188
+
+max displ
+0.3050E-03
+0.3507E-03
+0.3731E-03
+0.3954E-03
+0.4150E-03
+0.4573E-03
+
+iterations
+2
+33
+51
+199
+348
+500
+
+Estimated Factor of Safety =
+0
+
+0.2
+
+0.4
+
+0.6 SRF
+
+1.22
+0.8
+
+1
+
+1.2
+
+1.4
+
+3.00E-04
+
+3.40E-04
+
+FS  1.22
+
+dmax
+
+3.80E-04
+
+4.20E-04
+
+4.60E-04
+
+5.00E-04
+
+Fig 2.2 SRF vs. dmax for Example 2
+
+ex2.vec
+
+ex2.dis
+
+Fig 2.3 Displacement vectors and deformed mesh at failure for Example 2
+
+Fig 3.1 Finite element mesh for Example 3
+
+trial factor
+0.5000
+1.0000
+1.5000
+1.7500
+1.8750
+1.9375
+1.9688
+1.9844
+2.0000
+
+max displ
+0.3044E-01
+0.3535E-01
+0.4629E-01
+0.5365E-01
+0.5784E-01
+0.6063E-01
+0.6244E-01
+0.6389E-01
+0.7257E-01
+
+iterations
+2
+6
+35
+67
+82
+107
+143
+195
+500
+
+Estimated Factor of Safety =
+0
+
+0.5
+
+1
+
+SRF
+
+2.00
+1.5
+
+2
+
+2.00E-02
+
+FS  2.00
+dmax
+
+4.00E-02
+
+6.00E-02
+
+8.00E-02
+
+Fig 3.2 SRF vs. dmax for Example 3
+
+2.5
+
+ex3.vec
+
+ex3.dis
+
+Fig 3.3 Displacement vectors and deformed mesh at failure for Example 3
+
+"Example 4: A homogeneous slope including a
+free-surface"
+
+"Width of top of embankment (w1)"
+25.0
+
+y
+
+x
+
+"Width of sloping portion of embankment (s1)"
+10 ( 0, −2.4 )
+17.0
+"Distance foundation extends to right of
+embankment toe (w2)"
+24.0
+"Height of embankment (h1)"
+10.0
+"Thickness of foundation layer (h2)"
+10.0
+"Number of x-elements in embankment (nx1)"
+21
+"Number of x-elements to right of embankment
+toe (nx2)"
+12
+"Number of y-elements in embankment (ny1)"
+5
+
+25
+
+17
+
+24
+
+( 40, −8.5)
+
+10
+
+Fig 4.1 Finite element mesh for Example 4
+
+( 67, −8.5)
+
+"Number of y-elements in foundation (ny2)"
+5
+"Number of different property groups (np_types)"
+1
+"Material properties (phi,c,psi,gamma,e,v) for each group"
+5.0
+200.0 0.0 120.0 1.e5 0.3
+"Property group assigned to each element (etype, data not needed if np_types=1)"
+"Pseudo-static analysis: Horizontal acceleration factor (k_h)"
+0.0
+"Number of free surface points and their coordinates (nosurf, surf(2,nosurf))"
+22
+0.0 -2.40
+2.0 -2.45
+4.0 -2.50
+6.0 -2.55
+8.0 -2.60
+10.0 -2.67 12.0 -2.80 14.0 -2.95 16.0 -3.15 18.0 -3.40
+20.0 -3.65 22.0 -3.95 24.0 -4.25 26.0 -4.55 28.0 -4.85
+30.0 -5.30 32.0 -5.70 34.0 -6.25 36.0 -6.85 38.0 -7.65
+40.0 -8.50 67.0 -8.50
+"Unit weight of water (gam_w)"
+62.4
+"Iteration ceiling (limit)"
+1000
+"Factor of Safety accuracy tolerance (fos_tol)"
+0.05
+
+0.5000
+1.0000
+1.2500
+1.2656
+
+0.1950E+00
+0.2803E+00
+0.3630E+00
+0.4893E+00
+
+Estimated Factor of Safety =
+
+5
+33
+184
+1000
+1.27
+
+FS  1.19
+FS  1.27
+
+Fig 4.2 SRF vs. dmax for Example 4
+
+ex4.vec
+
+ex4.dis
+
+Fig 4.3 Displacement vectors and deformed mesh at failure for Example 4
+
+Fig 5.1 Finite element mesh for Example 5
+
+0.5000
+1.0000
+1.5000
+1.7500
+1.8125
+1.8281
+
+0.9791E-02
+0.1162E-01
+0.1285E-01
+0.1344E-01
+0.1380E-01
+0.1496E-01
+
+9
+10
+20
+36
+94
+500
+
+Estimated Factor of Safety =
+0
+
+0.5
+
+1
+
+SRF
+
+1.83
+1.5
+
+2
+
+8.00E-03
+
+FS  1.83
+
+dmax
+
+1.00E-02
+
+1.20E-02
+
+1.40E-02
+
+1.60E-02
+
+Fig 5.2 SRF vs. dmax for Example 5
+
+Fig 6.1 Finite element mesh for Example 6
+
+0.5000
+1.0000
+1.0156
+1.0312
+
+0.8548E-02
+0.1272E-01
+0.1327E-01
+0.1607E-01
+
+24
+111
+179
+500
+
+Estimated Factor of Safety =
+0
+
+0.2
+
+0.4
+
+0.6
+
+SRF
+
+1.03
+0.8
+
+1
+
+8.00E-03
+
+1.00E-02
+
+FS  1.03
+
+dmax
+
+1.20E-02
+
+1.40E-02
+
+1.60E-02
+
+1.80E-02
+
+Fig 6.2 SRF vs. dmax for Example 6
+
+1.2
+
+ex6.vec
+
+ex6.dis
+
+Fig 6.3 Displacement vectors and deformed mesh at failure for Example 6
+
+Example 7: A homogeneous slope subjected to a horizontal pseudo-acceleration
+The stability analysis is of a homogeneous slope subjected to a horizontal acceleration factor
+of 0.25g as shown in Figure 7.1
+
+'Example 7: A homogeneous slope subjected to a horizontal pseudo-acceleration'
+"Width of top of embankment (w1)"
+30.0
+
+0.25g
+g
+
+"Width of sloping portion of embankment (s1)"
+20.0
+
+30.0
+
+"Distance foundation extends to right of embankment toe (w2)"
+30.0
+
+10.0
+
+"Height of embankment (h1)"
+10.0
+
+10.0
+
+"Thickness of foundation layer (h2)"
+10.0
+"Number of x-elements in embankment (nx1)"
+50
+"Number of x-elements to right of embankment toe (nx2)"
+30
+
+20.0
+
+30.0
+
+Fig 7.1 Finite element mesh for Example 7
+
+Homogeneous slope with
+a horizontal acceleration
+of 0.25g
+
+"Number of y-elements in embankment (ny1)"
+10
+
+  = 30
+
+"Number of y-elements in foundation (ny2)"
+10
+
+c = 20.0
+ = 20.0
+
+"Number of different property groups (np_types)"
+1
+"Material properties (phi,c,psi,gamma,e,v) for each group"
+30.0 20.0 0.0 20.0 1.e5 0.3
+"Property group assigned to each element (etype, data not needed if np_types=1)"
+"Pseudo-static analysis: Horizontal acceleration factor (k_h)"
+0.25
+"Number of free surface points and their coordinates (nosurf, surf(2,nosurf))"
+0
+
+"Unit weight of water (gam_w)"
+9.81
+"Iteration ceiling (limit)"
+2000
+"Factor of Safety accuracy tolerance (fos_tol)"
+0.05
+
+0.5000
+1.0000
+1.2500
+1.3750
+1.3906
+1.4062
+
+0.4984E-01
+0.5313E-01
+0.6154E-01
+0.6896E-01
+0.6978E-01
+0.8632E-01
+
+227
+31
+79
+350
+599
+2000
+
+Estimated Factor of Safety =
+
+1.41
+
+dmax
+
+SRF
+
+FS  1.41
+
+Fig 7.2 SRF vs. dmax for Example 7
+
+ex7.vec
+
+ex7.dis
+
+Fig 7.3 Displacement vectors and deformed mesh at failure for Example 7
+
+

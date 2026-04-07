@@ -1,0 +1,15 @@
+# Secrets
+.demo-secrets
+*.secrets.env
+.env
+
+# Runtime outputs
+outputs_*/
+session-log-*.md
+*.log
+*.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
