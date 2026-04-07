@@ -20,6 +20,8 @@ from agent import run_agent
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("slope64-chatbot")
 
+VERSION = "1.0.0"
+
 MANUAL_PATH = Path(os.environ.get("MANUAL_PATH", "/app/slope64_manual.txt"))
 # Fallback: look next to this script
 if not MANUAL_PATH.exists():
@@ -48,7 +50,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="slope64 Q&A Chatbot", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="slope64 Q&A Chatbot", version=VERSION, lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -65,7 +67,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return HTML_PAGE
+    return HTML_PAGE.replace("v{{VERSION}}", f"v{VERSION}")
 
 @app.get("/health")
 async def health():
@@ -142,9 +144,11 @@ HTML_PAGE = """<!DOCTYPE html>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
-    header { background: #1a1d27; padding: 16px 24px; border-bottom: 1px solid #2d3045; }
-    header h1 { font-size: 1.25rem; color: #7eb3ff; }
-    header p { font-size: 0.8rem; color: #888; margin-top: 2px; }
+    header { background: #1a1d27; padding: 16px 24px; border-bottom: 1px solid #2d3045; display: flex; justify-content: space-between; align-items: flex-start; }
+    .header-left h1 { font-size: 1.25rem; color: #7eb3ff; }
+    .header-left p { font-size: 0.8rem; color: #888; margin-top: 2px; }
+    .header-right { text-align: right; }
+    .version { font-size: 0.75rem; color: #666; background: #0f1117; padding: 4px 8px; border-radius: 4px; border: 1px solid #2d3045; }
     #chat { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
     .msg { max-width: 760px; padding: 12px 16px; border-radius: 10px; line-height: 1.55; font-size: 0.93rem; }
     .msg.user { background: #1e3a5f; align-self: flex-end; color: #c8dfff; }
@@ -160,8 +164,13 @@ HTML_PAGE = """<!DOCTYPE html>
 </head>
 <body>
   <header>
-    <h1>slope64 Q&amp;A Assistant</h1>
-    <p>Ask questions about slope64 finite element analysis — input format, output interpretation, boundary conditions, and more.</p>
+    <div class="header-left">
+      <h1>slope64 Q&amp;A Assistant</h1>
+      <p>Ask questions about slope64 finite element analysis — input format, output interpretation, boundary conditions, and more.</p>
+    </div>
+    <div class="header-right">
+      <div class="version">v{{VERSION}}</div>
+    </div>
   </header>
   <div id="chat">
     <div class="msg assistant">Hello! I'm your slope64 FEA expert. Ask me anything about slope64 — input parameters, material definitions, boundary conditions, output interpretation, or slope stability concepts.</div>
