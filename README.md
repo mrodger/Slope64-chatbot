@@ -26,6 +26,22 @@ The chatbot is live on `http://localhost:8094` immediately after Phase 1 complet
 
 ---
 
+## Quick Launch
+
+Once the chatbot is running, open the launcher page:
+
+```
+http://192.168.88.102:8094/launcher
+```
+
+The launcher page displays:
+- Large **Launch Chatbot** button
+- Current chatbot endpoint
+- Health status
+- Version badge (v1.0.0)
+
+---
+
 ## Prerequisites
 
 - Drone running at `http://127.0.0.1:3010`

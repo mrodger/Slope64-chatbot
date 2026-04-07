@@ -69,6 +69,13 @@ class ChatRequest(BaseModel):
 async def index():
     return HTML_PAGE.replace("v{{VERSION}}", f"v{VERSION}")
 
+@app.get("/launcher", response_class=HTMLResponse)
+async def launcher():
+    launcher_path = Path(__file__).parent / "launcher.html"
+    if launcher_path.exists():
+        return launcher_path.read_text(encoding="utf-8")
+    return "<h1>Launcher not found</h1>"
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
