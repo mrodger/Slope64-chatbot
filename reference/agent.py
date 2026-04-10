@@ -5,8 +5,11 @@ Streams responses as SSE.
 """
 import os
 import json
+import logging
 import re
-from openai import OpenAI
+from openai import OpenAI, APIError, APIConnectionError, RateLimitError
+
+log = logging.getLogger("slope64-chatbot.agent")
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
@@ -97,21 +100,41 @@ def _explain_concept(manual_text: str, concept: str) -> str:
     return "\n".join(context_lines[:60])
 
 
+MAX_HISTORY_MESSAGES = 40  # prevent unbounded token growth
+
 async def run_agent(messages: list[dict], manual_text: str):
     """
     Run up to 10-turn GPT-5.4-mini agentic loop.
     Yields SSE-formatted strings.
     """
-    history = [{"role": "system", "content": SYSTEM_PROMPT}] + list(messages)
+    # Cap history to prevent excessively large API calls
+    trimmed = list(messages)[-MAX_HISTORY_MESSAGES:]
+    history = [{"role": "system", "content": SYSTEM_PROMPT}] + trimmed
     max_turns = 10
 
     for turn in range(max_turns):
-        response = client.chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=history,
-            tools=TOOLS,
-            stream=True,
-        )
+        try:
+            response = client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=history,
+                tools=TOOLS,
+                stream=True,
+            )
+        except RateLimitError:
+            log.warning("OpenAI rate limit hit")
+            yield f"data: {json.dumps({'type': 'text', 'content': 'Rate limit reached. Please try again shortly.'})}\n\n"
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+            return
+        except APIConnectionError as e:
+            log.error("OpenAI connection error: %s", e)
+            yield f"data: {json.dumps({'type': 'text', 'content': 'Connection error. Please try again.'})}\n\n"
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+            return
+        except APIError as e:
+            log.error("OpenAI API error: %s", e)
+            yield f"data: {json.dumps({'type': 'text', 'content': 'Service error. Please try again.'})}\n\n"
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+            return
 
         # Accumulate streamed response
         assistant_message = {"role": "assistant", "content": "", "tool_calls": []}

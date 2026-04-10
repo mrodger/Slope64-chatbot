@@ -10,6 +10,7 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -31,7 +32,16 @@ manual_text: str = ""
 MAX_MANUAL_SIZE = 10 * 1024 * 1024  # 10 MB max
 TRUSTED_PROXIES = os.environ.get("TRUSTED_PROXIES", "127.0.0.1").split(",")
 
-limiter = Limiter(key_func=get_remote_address)
+def _rate_limit_key(request: Request) -> str:
+    """Same XFF logic as /chat — only trust X-Forwarded-For from known proxies."""
+    client_ip = request.client.host if request.client else "unknown"
+    if request.client and request.client.host in TRUSTED_PROXIES:
+        xff = request.headers.get("X-Forwarded-For")
+        if xff:
+            client_ip = xff.split(",")[0].strip()
+    return client_ip
+
+limiter = Limiter(key_func=_rate_limit_key)
 
 
 @asynccontextmanager
@@ -51,17 +61,28 @@ async def lifespan(app: FastAPI):
     yield
 
 
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=()"
+        return response
+
 app = FastAPI(title="slope64 Q&A Chatbot", version=VERSION, lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SecurityHeadersMiddleware)
 
-# CORS middleware
+# CORS middleware — wildcard + credentials is invalid per CORS spec; restrict instead
+CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=bool(CORS_ORIGINS),
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # ── Chat request schema ────────────────────────────────────────────────────────
@@ -93,12 +114,7 @@ async def health():
 @app.post("/chat")
 @limiter.limit("30/minute")
 async def chat(request: Request, body: ChatRequest):
-    # Resolve client IP — prefer request.client.host, only trust X-Forwarded-For from trusted proxies
-    client_ip = request.client.host if request.client else "unknown"
-    if request.client and request.client.host in TRUSTED_PROXIES:
-        xff = request.headers.get("X-Forwarded-For")
-        if xff:
-            client_ip = xff.split(",")[0].strip()
+    client_ip = _rate_limit_key(request)
 
     # Validate message roles and content
     valid_roles = {"user", "assistant", "system"}
