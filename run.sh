@@ -21,7 +21,7 @@ mkdir -p "$WORKSPACE_DIR"
 
 docker exec -i drone-agent tee /workspace/.demo-secrets > /dev/null <<SECRETS
 OPENAI_API_KEY=$OPENAI_API_KEY
-OPENAI_MODEL=gpt-5.4-mini
+OPENAI_MODEL=gpt-4o-mini
 SECRETS
 
 docker exec drone-agent chmod 600 /workspace/.demo-secrets
@@ -116,7 +116,7 @@ def get_stats() -> dict:
 - System prompt: "You are a slope64 finite element analysis expert. Users ask questions about the slope64 program, its usage, input data format, output interpretation, and slope stability analysis concepts. Use the search_manual and explain_concept tools to provide accurate answers based on the embedded slope64 user manual. Be technical but clear."
 - Tools: `search_manual(query)` → semantic search through manual, `explain_concept(term)` → explain in context
 - Max 10 turns, SSE streaming
-- Model from env: OPENAI_MODEL (default gpt-5.4-mini)
+- Model from env: OPENAI_MODEL (default gpt-4o-mini)
 
 **requirements.txt**:
 ```
@@ -143,8 +143,10 @@ CMD ["python", "server.py"]
 ```bash
 cd /workspace/<taskId>/slope64-chatbot
 docker build -t slope64-chatbot:latest .
+docker network create slope64-demo-net 2>/dev/null || true
 docker run -d --name slope64-chatbot \
   -p 8094:8094 \
+  --network slope64-demo-net \
   --env-file /workspace/.demo-secrets \
   -v /workspace/reference/slope64_manual.txt:/app/slope64_manual.txt:ro \
   slope64-chatbot:latest
@@ -169,7 +171,7 @@ Build a GPT-5.4-mini code reviewer. Create `peer-review/` in workspace.
 
 **review_agent.py** — Light security review:
 - Model: GPT-5.4-mini (from env)
-- System prompt: "You are a Python code reviewer. Examine the slope64-chatbot source for security issues (injection, credential leaks, SSRF), code quality, error handling, and API design. Cite file names and line numbers."
+- System prompt: "You are a Python code reviewer. Examine the slope64-chatbot source for security issues (injection, credential leaks, SSRF), code quality, error handling, and API design. Cite file names and line numbers. The chatbot service is reachable at http://slope64-chatbot:8094 on the slope64-demo-net Docker network."
 - Tools: `read_file(path)`, `list_files(directory)`, `curl_endpoint(url, method)`, `write_finding(severity, title, description, file, line, recommendation)`
 - 15 turn max, append findings to findings.json
 - On completion: generate REVIEW.md sorted by severity
@@ -182,7 +184,7 @@ Build a GPT-5.4-mini code reviewer. Create `peer-review/` in workspace.
 cd /workspace/<taskId>/peer-review
 docker build -t slope64-peer-review:latest .
 docker run -d --name slope64-peer-review \
-  --network host \
+  --network slope64-demo-net \
   --env-file /workspace/.demo-secrets \
   -v /workspace/<taskId>/slope64-chatbot:/audit:ro \
   slope64-peer-review:latest
